@@ -1,0 +1,19 @@
+import{editPlan,checkPlan}from'/itinerary.mjs';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let back=[],forward=[],lastPlan='';
+export function mountWorkbench(p,selected,commit){
+ if(lastPlan!==p.planId){back=[];forward=[];lastPlan=p.planId;}
+ const root=document.querySelector('#result');
+ const wrap=document.createElement('section');wrap.className='workbench';
+ const totalNights=Math.round((Date.parse(p.conditions.departure)-Date.parse(p.conditions.arrival))/864e5);
+ wrap.innerHTML=`<div class="section-head"><h2>04 / 我的行程工作台</h2><span>可编辑 · 可撤销</span></div><p class="hint">锁定的活动会保留在原日期；时间与路程尚未核验。</p><div class="actions"><button data-undo ${!back.length?'disabled':''}>撤销</button><button data-redo ${!forward.length?'disabled':''}>重做</button><button data-export>导出方案文件</button></div>
+ <div class="budget-panel"><strong>住宿预算上限 · 每间房</strong><h3>¥${esc(p.conditions.budget*totalNights)} <small>／${totalNights} 晚</small></h3><p>按你填写的每晚预算计算；实际酒店费用、门票、交通和餐费尚未核算，不作为全程报价。</p></div>
+ <details open><summary>编辑每日活动</summary>${p.days.map((d,di)=>`<div class="edit-day"><h3>${esc(d.date)}</h3><select aria-label="添加候选活动" data-add data-day="${di}" data-stop="0"><option value="">添加候选活动</option>${p.scenic.filter(t=>!p.days.some(d=>d.stops.some(s=>s.id===t.id))).map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('')}</select>${d.stops.map((s,si)=>`<div class="edit-stop"><strong>${esc(p.scenic.find(t=>t.id===s.id)?.name)}</strong><span>${s.locked?'已锁定':''}</span><div class="actions">${[['lock',s.locked?'解锁':'锁定'],['up','上移'],['down','下移'],['remove','移除']].map(([a,t])=>`<button data-edit="${a}" data-day="${di}" data-stop="${si}">${t}</button>`).join('')}<select aria-label="换到其他日期" data-move data-day="${di}" data-stop="${si}"><option value="">移至其他天</option>${p.days.map((t,i)=>i===di?'':`<option value="${i}">${esc(t.date)}</option>`).join('')}</select><select aria-label="替换活动" data-replace data-day="${di}" data-stop="${si}"><option value="">换个候选</option>${p.scenic.filter(t=>!p.days.some(d=>d.stops.some(s=>s.id===t.id))).map(t=>`<option value="${esc(t.id)}">${esc(t.name)}</option>`).join('')}</select></div></div>`).join('')||'<p>自由活动与休息</p>'}</div>`).join('')}</details><p class="hint">${checkPlan(p).map(esc).join('；')||'活动均匹配本次候选。'} 开放时间、步行距离、预约时段需另行确认。</p><h3>住宿候选快速对比</h3><div class="comparison">${p.hotels.slice(0,3).map(h=>`<article><strong>${esc(h.name)}</strong><p>${esc(h.address||'位置待确认')}</p><p>${h.price?'供应商参考价 ¥'+esc(h.price):'报价未提供'}</p><p>${esc(p.hotelRecommendations?.find(r=>r.id===h.id)?.reason||'暂无充分信息比较设施与适合度')}</p><span>${selected===h.id?'当前住处':'候选住处'}</span></article>`).join('')}</div><p class="hint">候选对比依据本次查询；不补造评分，不据起价判断全程最便宜。</p>`;
+ root.append(wrap);
+ const update=(action,di,si,value)=>{try{const next=editPlan(p,di,si,action,value);back.push(structuredClone(p));if(back.length>30)back.shift();forward=[];commit(next);}catch(e){document.querySelector('#status').textContent=e.message;}};
+ wrap.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>update(b.dataset.edit,+b.dataset.day,+b.dataset.stop));
+ for(const type of ['move','replace','add'])wrap.querySelectorAll(`[data-${type}]`).forEach(s=>s.onchange=()=>{if(s.value!=='')update(type,+s.dataset.day,+s.dataset.stop,type==='move'?+s.value:s.value);});
+ wrap.querySelector('[data-undo]').onclick=()=>{if(back.length){forward.push(structuredClone(p));commit(back.pop());}};
+ wrap.querySelector('[data-redo]').onclick=()=>{if(forward.length){back.push(structuredClone(p));commit(forward.pop());}};
+ wrap.querySelector('[data-export]').onclick=()=>{const url=URL.createObjectURL(new Blob([JSON.stringify({version:2,current:p,selected},null,2)],{type:'application/json'}));const a=document.createElement('a');a.href=url;a.download='住玩行程-'+p.conditions.arrival+'.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);};
+}

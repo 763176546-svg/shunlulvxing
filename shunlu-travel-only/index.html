@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>顺路旅行 · 旅行规划实验室</title><link rel="stylesheet" href="/style.css"></head>
+<body><header><a href="/">顺路旅行<span>TRAVEL ALONG</span></a><a href="/guide">导入攻略排行程 →</a></header><main>
+
+<section class="workspace"><form id="brief"><div class="section-head"><h2>行程规划</h2></div>
+<label>目的地<input name="city" maxlength="40" required></label><div class="row"><label>入住日期<input name="arrival" type="date" required></label><label>离店日期<input name="departure" type="date" required></label></div>
+<div class="row"><label>每间每晚住宿预算（元）<input name="budget" type="number" min="1" max="100000" value="600" required></label><label>同行人<select name="party"><option>情侣／两位成人</option><option>亲子出行</option><option>携长辈</option><option>独自旅行</option><option>朋友／多人同行</option></select></label></div>
+<label>旅行节奏<select name="pace"><option>轻松</option><option>适中</option><option>紧凑</option></select></label><label>想去哪里，或有什么偏好？<textarea name="interests" maxlength="500"></textarea></label>
+<label class="check"><input name="useAI" type="checkbox">使用 AI 规划（调用百炼模型）</label>
+<p class="hint">查候选只获取酒店和景点。勾选 AI 后，点击生成行程才调用百炼；规则模式按候选顺序排程。</p>
+<p class="hint" id="connection" role="status">正在检查服务配置…</p><button class="text-button" id="check-ai" type="button">检查 AI 连接</button>
+<p class="hint" id="status" role="status"></p><button id="find-candidates" type="submit">查候选</button><p class="hint">最多规划前 5 天；预算用于决策参考，不代表已匹配房型或锁定报价。</p><button class="text-button" id="restore" type="button">恢复上次保存的方案</button></form>
+<div><section id="candidates" aria-live="polite" hidden></section><section id="result" aria-live="polite"></section></div></section></main><script type="module" src="/app.js"></script></body></html>
