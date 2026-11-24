@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+ <meta charset="utf-8">
+ <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+ <meta name="theme-color" content="#f4f7f2">
+ <title>顺路旅行 · 行程工作台</title>
+ <link rel="stylesheet" href="./guide.css">
+</head>
+<body><aside class="demo-notice">参赛演示 · 样例数据 <button type="button" id="demo-start">载入安顺攻略</button><a href="./watch.html">看演示视频</a></aside>
+<main>
+ <section data-step="plans">
+  <div class="title-row home-header"><strong class="brand"><span class="brand-mark" aria-hidden="true"></span>顺路旅行</strong><button data-action="open-import" class="secondary">＋ 新建计划</button></div>
+  <h1>旅行计划</h1><div id="plans-list"></div>
+ </section>
+ <section data-step="profile" hidden>
+  <h1>我的</h1>
+  <div class="profile-stats" id="profile-stats"></div>
+  <details><summary>备份与迁移计划</summary>
+   <label>备份文本<textarea id="plan-backup" rows="4" spellcheck="false"></textarea></label>
+   <div class="actions"><button class="secondary" data-action="backup-plans">生成备份文本</button><button class="secondary" data-action="restore-plans">恢复备份</button></div>
+   <p id="backup-status" role="status"></p>
+  </details>
+ </section>
+ <section data-step="import-guide" aria-labelledby="import-title">
+  <dialog id="import-sheet" aria-label="导入攻略">
+  <div class="sheet-handle"></div>
+  <form id="import">
+   <div class="text-import">
+    <label><strong id="import-title">文本或链接识别</strong><textarea name="text" autofocus rows="3" maxlength="18000" placeholder="粘贴攻略正文、链接或分享文案。多篇正文用空行分隔。"></textarea></label>
+    <button id="back-to-link" class="secondary" type="button" data-action="reset-import-mode" hidden>切回链接识别</button>
+    <button id="recognize">开始识别</button>
+   </div>
+   <button type="button" class="screenshot-entry secondary" data-action="choose-image"><strong>截图识别</strong></button>
+   <input name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple hidden>
+   <p id="import-status" role="status"></p>
+   <div id="link-recovery" class="actions" hidden></div>
+   <div class="actions import-tools"><button class="secondary" type="button" data-action="close-import">关闭</button></div>
+  </form>
+  </dialog>
+ </section>
+ <section data-step="confirm-places" hidden>
+  <button class="icon-button" aria-label="返回我的计划" data-action="home">×</button>
+  <div id="import-source"></div>
+  <div class="review-tabs"><button id="place-tab" data-action="review-places"></button><button id="day-tab" data-action="review-days"></button><button id="select-all" data-action="select-all"></button></div>
+  <div id="review-list"></div>
+  <div id="review-actions" class="bottom-actions"></div>
+ </section>
+ <section data-step="library" hidden>
+  <div class="title-row"><h1>地点收藏</h1><button class="secondary" data-action="library-back">返回</button></div>
+  <canvas id="library-map" width="660" height="330" aria-label="收藏地点分布地图" hidden></canvas>
+  <label class="library-search">搜索地点<input id="library-search" type="search" placeholder="按地点、城市或地址搜索"></label>
+  <form id="manual" class="actions manual"><label>手动添加地点 <input name="name" maxlength="120" required placeholder="景点、街巷或店名"></label><button class="secondary">添加</button></form>
+  <p id="place-status" role="status"></p><div id="places"></div>
+ </section>
+ <nav id="travel-nav" class="travel-nav" aria-label="主导航">
+  <a href="#plans"><span aria-hidden="true">▤</span>行程</a>
+  <a href="#library" data-action="open-library"><span aria-hidden="true">⌖</span>地点</a>
+  <a href="#profile"><span aria-hidden="true">◉</span>我的</a>
+ </nav>
+  <section data-step="plan-days" aria-labelledby="plan-title" hidden>
+   <div class="map-stage"><button class="icon-button" aria-label="返回我的计划" data-action="home">‹</button><canvas id="overview-map" width="660" height="330" aria-label="行程地图" hidden></canvas><div class="map-controls" hidden><button type="button" data-action="map-in" aria-label="放大地图">＋</button><button type="button" data-action="map-out" aria-label="缩小地图">−</button><button type="button" data-action="map-fit">全览</button></div><p id="map-caption"></p></div>
+   <div class="plan-sheet">
+   <div class="sheet-handle"></div><h1 id="plan-title"></h1><p id="plan-length" class="muted"></p>
+   <div id="plan-tabs" class="plan-tabs"></div>
+   <div id="plan-stops"></div>
+   <div id="plan-edit" hidden>
+   <label>出游开始日期 <input type="date" id="trip-date" required></label>
+   <div id="saved-places"></div>
+   <div id="days"></div>
+   </div>
+   <div class="actions plan-services"><a href="#visit-guide">门票</a><a href="#travel-options">住宿与交通</a></div>
+   </div>
+   <div class="bottom-actions"><button class="secondary" data-action="plan-add">＋ 添加</button><button id="edit-button" class="secondary" data-action="plan-edit">编辑</button><a class="pill" href="#check-route">检查路线</a></div>
+  </section>
+ <section data-step="check-route" aria-labelledby="check-title" hidden>
+  <a href="#plan-days">‹ 返回行程</a><h2 id="check-title">路线校验</h2>
+  <div id="checks"></div>
+ </section>
+ <section data-step="visit-guide" aria-labelledby="visit-title" hidden>
+  <a href="#plan-days">‹ 返回行程</a><h2 id="visit-title">门票</h2>
+  <div id="visits"></div>
+ </section>
+ <section data-step="travel-options" aria-labelledby="extra-title" hidden>
+  <a href="#plan-days">‹ 返回行程</a><h2 id="extra-title">住宿和往返交通</h2>
+  <div class="row services">
+   <form id="hotel"><h3>找住宿</h3>
+    <label>住宿区域或地标 <input name="area" maxlength="100" required></label>
+    <p class="muted" id="areas"></p>
+    <div class="row"><label>入住 <input type="date" name="arrival" required></label><label>离店 <input type="date" name="departure" required></label></div>
+    <label>每间每晚预算（元） <input type="number" name="budget" value="600" min="1" max="100000" required></label>
+    <button>查飞猪酒店</button>
+   </form>
+   <form id="transport"><h3>查往返</h3>
+    <label>出发城市 <input name="origin" maxlength="40" required></label>
+    <div class="row"><label>方式 <select name="mode"><option value="train">火车</option><option value="flight">飞机</option></select></label><label>方向 <select name="direction"><option value="outbound">去程</option><option value="return">返程</option></select></label></div>
+    <div class="row"><label>去程出发日 <input type="date" name="arrival" required></label><label>返程出发日 <input type="date" name="departure" required></label></div>
+    <div class="row"><label>最晚到达时刻 <input type="time" name="arriveBy"></label><label>最早返程时刻 <input type="time" name="leaveAfter"></label></div>
+    <p class="muted" id="transport-hint"></p>
+    <label>最长时长（小时，可选） <input type="number" name="maxHours" min="1" max="48" step="0.5"></label>
+    <button>查飞猪交通</button><div class="result" id="transport-result" aria-live="polite"></div>
+   </form>
+  </div>
+ </section>
+ <section id="hotel-search-sheet" data-step="hotel-search" aria-labelledby="hotel-search-title" hidden>
+  <div class="title-row"><h2 id="hotel-search-title"></h2><button type="button" class="secondary" data-action="close-hotel-search">返回</button></div>
+  <div id="hotel-search-body"></div>
+ </section>
+ <p class="muted" id="storage-status" role="status"></p>
+</main>
+<dialog id="plan-tools" aria-labelledby="plan-tools-title">
+ <div class="title-row"><h2 id="plan-tools-title">添加到行程</h2><form method="dialog"><button class="secondary">关闭</button></form></div>
+ <div class="plan-tools-grid">
+  <button type="button" data-action="plan-library">从地点收藏添加</button>
+  <button type="button" data-action="recommend-hotels">推荐住宿</button>
+  <a class="secondary" href="#travel-options" data-action="close-plan-tools">查询往返交通</a>
+ </div>
+</dialog>
+<dialog id="detail"><div class="title-row"><h2 id="detail-title"></h2><button type="button" class="secondary" data-action="close">关闭</button></div><div id="detail-body"></div></dialog>
+<dialog id="add-sheet" class="destination-sheet" aria-labelledby="add-title">
+ <div class="title-row"><h2 id="add-title">添加至计划</h2><button type="button" class="secondary" data-action="create-plan">＋ 新建计划</button></div>
+ <div id="plan-choices"></div><button type="button" class="secondary" data-action="close-add">取消</button>
+</dialog>
+<dialog id="collection-sheet" class="destination-sheet" aria-labelledby="collection-title">
+ <div class="title-row"><h2 id="collection-title">加入收藏夹</h2><button type="button" class="secondary" data-action="close-collection">关闭</button></div>
+ <button type="button" class="secondary" data-action="new-folder">＋ 新建收藏夹</button>
+ <form id="collection-pick"><div id="collection-choices"></div><button>完成收藏</button></form>
+ <form id="folder-editor" hidden>
+  <label>收藏夹名称<input name="title" maxlength="30" required></label>
+  <label>简介<textarea name="description" maxlength="100" rows="3"></textarea></label>
+  <label>地点图标<select name="icon"><option>📍</option><option>🏞️</option><option>🍜</option><option>🏨</option></select></label>
+  <div class="actions"><button>保存收藏夹</button><button type="button" class="secondary" data-action="cancel-folder">返回</button></div>
+ </form>
+</dialog>
+<div id="collection-status" role="status" class="collection-message" hidden></div>
+<script type="module" src="./demo.mjs"></script>
+</body>
+</html>
